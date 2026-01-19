@@ -1,0 +1,18 @@
+# Xcode
+#
+# Build artifacts
+build/
+DerivedData/
+
+# Personal settings
+xcuserdata/
+
+# Architecture-specific files
+*.moved-aside
+*.xcuserstate
+
+# Secrets
+Swifty-Companion/Secrets.plist
+
+# OS-specific
+.DS_Store

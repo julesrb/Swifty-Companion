@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct Swifty_CompanionApp: App {
+    @StateObject var loginVM : LoginVM = LoginVM()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(loginVM)
         }
     }
 }
