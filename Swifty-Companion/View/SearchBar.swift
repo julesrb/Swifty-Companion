@@ -32,13 +32,23 @@ struct SearchBar: View {
     
     func loadUser(login: String) async {
         let api = Api42VM()
-        do {
-            if let token = loginVM.token?.access_token {
-                user = try await api.loadStudentProfile(login: login, token: token)
+        if let token = loginVM.token {
+            if token.isExpired {
+                print("Renew token")
+                do {
+                    try await loginVM.exchangeCodeForToken()
+                } catch {
+                    errorMessage = error.localizedDescription
+                    print(errorMessage)
+                }
             }
-        } catch {
-            errorMessage = error.localizedDescription
-            print(errorMessage)
+            
+            do {
+                user = try await api.loadStudentProfile(login: login, token: token)
+            } catch {
+                errorMessage = error.localizedDescription
+                print(errorMessage)
+            }
         }
     }
 }

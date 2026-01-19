@@ -14,6 +14,7 @@ class LoginVM : NSObject, ObservableObject {
     static let uid: String = APISecrets.uid
     static let secret: String = APISecrets.secret
     static let redirect_uri : String = "swiftycompanion://oauth/callback"
+    private var authCode : String?
     let url : String = "https://api.intra.42.fr/oauth/authorize?" +
                   "client_id=\(uid)&" +
                   "redirect_uri=\(redirect_uri)&" +
@@ -40,9 +41,9 @@ class LoginVM : NSObject, ObservableObject {
                 print("No code in callback")
                 return
             }
-
+            self.authCode = code
             Task {
-                self.token = try await self.exchangeCodeForToken(code)
+                try await self.exchangeCodeForToken()
             }
         }
 
@@ -51,14 +52,16 @@ class LoginVM : NSObject, ObservableObject {
         session.start()
     }
     
-    func exchangeCodeForToken(_ code: String) async throws -> Token {
+    func exchangeCodeForToken() async throws {
         let url = URL(string: "https://api.intra.42.fr/oauth/token")!
+        
+        guard let authCode else {return}
 
         let body =
             "grant_type=authorization_code&" +
             "client_id=\(Self.uid)&" +
             "client_secret=\(Self.secret)&" +
-            "code=\(code)&" +
+            "code=\(authCode)&" +
             "redirect_uri=\(Self.redirect_uri)"
 
         var request = URLRequest(url: url)
@@ -67,7 +70,7 @@ class LoginVM : NSObject, ObservableObject {
         request.httpBody = body.data(using: .utf8)
 
         let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode(Token.self, from: data)
+        self.token = try JSONDecoder().decode(Token.self, from: data)
     }
 }
 

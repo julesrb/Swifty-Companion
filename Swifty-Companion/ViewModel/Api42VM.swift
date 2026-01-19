@@ -10,27 +10,18 @@ import Foundation
 
 class Api42VM {
 
-    func loadMyProfile(token: String) async throws -> User {
+    func loadMyProfile(token: Token) async throws -> User {
         let url = URL(string: "https://api.intra.42.fr/v2/me")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(token.access_token)", forHTTPHeaderField: "Authorization")
 
         let (data, _) = try await URLSession.shared.data(for: request)
         return try JSONDecoder().decode(User.self, from: data)
     }
     
-    func loadUserById(id: Int, token: String) async throws -> User {
-        let url = URL(string: "https://api.intra.42.fr/v2/users/\(id)")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode(User.self, from: data)
-    }
-
-    func loadStudentProfile(login: String, token: String) async throws -> User? {
+    func loadStudentProfile(login: String, token: Token) async throws -> User? {
         let normalizedLogin = login.lowercased()
         
         var components = URLComponents(string: "https://api.intra.42.fr/v2/users")!
@@ -40,7 +31,7 @@ class Api42VM {
 
         var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(token.access_token)", forHTTPHeaderField: "Authorization")
 
         let (data, _) = try await URLSession.shared.data(for: request)
         let users = try JSONDecoder().decode([User].self, from: data)
@@ -48,5 +39,15 @@ class Api42VM {
             return nil
         }
         return try await loadUserById(id: userId, token: token)
+    }
+    
+    func loadUserById(id: Int, token: Token) async throws -> User {
+        let url = URL(string: "https://api.intra.42.fr/v2/users/\(id)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token.access_token)", forHTTPHeaderField: "Authorization")
+        
+        let (data, _) = try await URLSession.shared.data(for: request)
+        return try JSONDecoder().decode(User.self, from: data)
     }
 }

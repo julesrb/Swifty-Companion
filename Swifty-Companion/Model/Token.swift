@@ -13,5 +13,13 @@ struct Token: Decodable {
     let token_type: String
     let expires_in: Int
     let scope: String
-    let created_at: Int
+    let created_at: TimeInterval
+    
+    var expirationDate: Date {
+        Date(timeIntervalSince1970: created_at + TimeInterval(expires_in))
+    }
+
+    var isExpired: Bool {
+        Date() >= expirationDate
+    }
 }
