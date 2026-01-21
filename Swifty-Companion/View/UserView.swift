@@ -37,10 +37,9 @@ struct UserView: View {
     }
     
     func loadUser() async {
-        let api = Api42VM()
         do {
             let token = try await loginVM.getValidToken()
-            user = try await api.loadMyProfile(token: token)
+            user = try await Api42Service.loadMyProfile(token: token)
         } catch {
             errorMessage = error.localizedDescription
             print("User load failed: \(errorMessage ?? "")")

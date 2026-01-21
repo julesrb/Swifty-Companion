@@ -8,9 +8,9 @@
 import Foundation
 
 
-class Api42VM {
+class Api42Service {
 
-    func loadMyProfile(token: Token) async throws -> User {
+    static func loadMyProfile(token: Token) async throws -> User {
         let url = URL(string: "https://api.intra.42.fr/v2/me")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -30,7 +30,7 @@ class Api42VM {
     }
     
 
-    func loadStudentProfile(login: String, token: Token) async throws -> User {
+    static func loadStudentProfile(login: String, token: Token) async throws -> User {
         let normalizedLogin = login.lowercased()
         
         var components = URLComponents(string: "https://api.intra.42.fr/v2/users")!
@@ -73,7 +73,7 @@ class Api42VM {
         return try await loadUserById(id: userId, token: token)
     }
     
-    func loadUserById(id: Int, token: Token) async throws -> User {
+    static func loadUserById(id: Int, token: Token) async throws -> User {
         let url = URL(string: "https://api.intra.42.fr/v2/users/\(id)")!
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
