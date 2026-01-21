@@ -11,6 +11,7 @@ struct User: Codable {
     let id: Int
     let login: String
     let email: String
+    let location: String?
     let firstname: String
     let displayname: String
     let image: UserImage
@@ -19,6 +20,7 @@ struct User: Codable {
 
     enum CodingKeys: String, CodingKey {
         case id
+        case location
         case login
         case email
         case displayname

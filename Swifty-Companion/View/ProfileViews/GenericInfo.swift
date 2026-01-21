@@ -35,10 +35,9 @@ struct GenericInfo: View {
                             .fontWeight(.bold)
                         Spacer()
                         Circle()
-                            .foregroundStyle(Color.accentColor)
+                            .foregroundStyle(user.location? ? Color.accentColor : .gray)
                             .frame(height: 10)
-                        Text("online")
-                        //TODO add condition on logged in ?
+                        Text(user.location? ? user.location : "offline")
                     }
                     Text(user.displayname)
                         .font(.headline)
