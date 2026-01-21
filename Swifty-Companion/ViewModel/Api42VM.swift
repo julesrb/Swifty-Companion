@@ -16,12 +16,21 @@ class Api42VM {
         request.httpMethod = "GET"
         request.setValue("Bearer \(token.access_token)", forHTTPHeaderField: "Authorization")
 
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode(User.self, from: data)
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                throw NetworkError.invalidResponse
+            }
+            return try JSONDecoder().decode(User.self, from: data)
+        } catch let error as URLError where error.code == .notConnectedToInternet {
+            throw NetworkError.noNetwork
+        } catch {
+            throw error
+        }
     }
     
 
-    func loadStudentProfile(login: String, token: Token) async throws -> User? {
+    func loadStudentProfile(login: String, token: Token) async throws -> User {
         let normalizedLogin = login.lowercased()
         
         var components = URLComponents(string: "https://api.intra.42.fr/v2/users")!
@@ -33,10 +42,33 @@ class Api42VM {
         request.httpMethod = "GET"
         request.setValue("Bearer \(token.access_token)", forHTTPHeaderField: "Authorization")
 
-        let (data, _) = try await URLSession.shared.data(for: request)
+        let data: Data
+        do {
+            let (incomingData, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                throw NetworkError.invalidResponse
+            }
+            data = incomingData
+        } catch let error as URLError where error.code == .notConnectedToInternet {
+            throw NetworkError.noNetwork
+        } catch {
+            throw error
+        }
+        
+        // Debug print of incoming Json
+        if let jsonObject = try? JSONSerialization.jsonObject(with: data),
+           let prettyData = try? JSONSerialization.data(
+                withJSONObject: jsonObject,
+                options: [.prettyPrinted]
+           ),
+           let jsonString = String(data: prettyData, encoding: .utf8) {
+            print(jsonString)
+        }
+        
         let users = try JSONDecoder().decode([User].self, from: data)
+        
         guard let userId = users.first?.id else {
-            return nil
+            throw NetworkError.userNotFound
         }
         return try await loadUserById(id: userId, token: token)
     }
@@ -47,7 +79,16 @@ class Api42VM {
         request.httpMethod = "GET"
         request.setValue("Bearer \(token.access_token)", forHTTPHeaderField: "Authorization")
         
-        let (data, _) = try await URLSession.shared.data(for: request)
-        return try JSONDecoder().decode(User.self, from: data)
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                throw NetworkError.invalidResponse
+            }
+            return try JSONDecoder().decode(User.self, from: data)
+        } catch let error as URLError where error.code == .notConnectedToInternet {
+            throw NetworkError.noNetwork
+        } catch {
+            throw error
+        }
     }
 }

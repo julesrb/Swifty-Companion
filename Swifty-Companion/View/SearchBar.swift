@@ -31,24 +31,16 @@ struct SearchBar: View {
     }
     
     func loadUser(login: String) async {
+        errorMessage = "Searching..."
+        user = nil
         let api = Api42VM()
-        if let token = loginVM.token {
-            if token.isExpired {
-                print("Renew token")
-                do {
-                    try await loginVM.exchangeCodeForToken()
-                } catch {
-                    errorMessage = error.localizedDescription
-                    print(errorMessage)
-                }
-            }
-            
-            do {
-                user = try await api.loadStudentProfile(login: login, token: token)
-            } catch {
-                errorMessage = error.localizedDescription
-                print(errorMessage)
-            }
+        
+        do {
+            let token = try await loginVM.getValidToken()
+            user = try await api.loadStudentProfile(login: login, token: token)
+        } catch {
+            errorMessage = error.localizedDescription
+            print("User load failed: \(errorMessage)")
         }
     }
 }

@@ -10,7 +10,7 @@ import SwiftUI
 
 struct StudentView: View {
     @State var user: User?
-    @State var errorMessage: String = "Enter a existing to search"
+    @State var errorMessage: String = "Enter a existing username to search"
 
     var body: some View {
         

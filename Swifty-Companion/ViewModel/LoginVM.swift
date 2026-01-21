@@ -55,7 +55,7 @@ class LoginVM : NSObject, ObservableObject {
     func exchangeCodeForToken() async throws {
         let url = URL(string: "https://api.intra.42.fr/oauth/token")!
         
-        guard let authCode else {return}
+        guard let authCode else { return }
 
         let body =
             "grant_type=authorization_code&" +
@@ -69,8 +69,34 @@ class LoginVM : NSObject, ObservableObject {
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.httpBody = body.data(using: .utf8)
 
-        let (data, _) = try await URLSession.shared.data(for: request)
-        self.token = try JSONDecoder().decode(Token.self, from: data)
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                throw NetworkError.invalidResponse
+            }
+            self.token = try JSONDecoder().decode(Token.self, from: data)
+        } catch let error as URLError where error.code == .notConnectedToInternet {
+            throw NetworkError.noNetwork
+        } catch {
+            throw error
+        }
+    }
+
+    func getValidToken() async throws -> Token {
+        guard let token = self.token else {
+            throw NetworkError.invalidResponse // Or a specific NotLoggedIn error
+        }
+        
+        if token.isExpired {
+            print("Token expired, attempting renewal...")
+            try await exchangeCodeForToken()
+            guard let newToken = self.token else {
+                throw NetworkError.invalidResponse
+            }
+            return newToken
+        }
+        
+        return token
     }
 }
 
