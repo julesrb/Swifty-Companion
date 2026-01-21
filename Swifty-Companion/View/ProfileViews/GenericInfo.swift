@@ -35,9 +35,9 @@ struct GenericInfo: View {
                             .fontWeight(.bold)
                         Spacer()
                         Circle()
-                            .foregroundStyle(user.location? ? Color.accentColor : .gray)
+                            .foregroundStyle(user.location != nil ? Color.accentColor : .gray)
                             .frame(height: 10)
-                        Text(user.location? ? user.location : "offline")
+                        Text(user.location ?? "offline")
                     }
                     Text(user.displayname)
                         .font(.headline)
@@ -45,8 +45,6 @@ struct GenericInfo: View {
                         .font(.subheadline)
                 }
             }
-
-            
         }, sideContent: {
         })
     }
